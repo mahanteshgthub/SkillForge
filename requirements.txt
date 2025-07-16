@@ -12,3 +12,4 @@ WTForms
 SQLAlchemy
 Jinja2
 itsdangerous
+openpyxl
