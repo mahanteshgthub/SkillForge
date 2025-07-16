@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<div class="home-hero-compact">
+  <div class="hero-message">
+    <h1>Welcome to <br> <span>🛠️SkillForge</span></h1>
+    <p>Empowering your journey in hands-on trade skills.</p> <p>Let’s get you started.</p></div>
+
+  <div class="auth-panel">
+    <h2>Login</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <!-- <div class="alert alert-{{ category }}">{{ message }}</div> -->
+          <div class= "alert-warning">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+      {{ form.hidden_tag() }}
+      {{form.email.label (class="auth-labels")}} {{ form.email(class="form-control") }}
+      {{ form.password.label (class="auth-labels")}} {{ form.password(class="form-control") }}
+      <button type="submit" class="btn btn-primary btn-full">🔐 Log In</button>
+    </form>
+
+    <div class="auth-links">
+      <a href="{{ url_for('forgot_password') }}" style="font-size: 30px; color: blue">Forgot password?</a>
+      <span>·</span>
+      <a href="{{ url_for('register') }}" style="font-size: 30px; color: blue">Register</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

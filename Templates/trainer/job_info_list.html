@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📘 Job Info Sheets</h2>
+
+<div class="job-info-gallery">
+  {% for job in job_infos %}
+  <div class="job-card">
+    <div class="job-header">
+      <strong>
+        Ex-{{ job.workorder.exercise_no if job.workorder else '' }} | {{ job.trade }} – {{ job.year }} | Aim: {{ job.aim }}
+      </strong>
+    </div>
+    {% if job.workorder and job.workorder.job_image %}
+      <div class="workorder-image mb-3 text-center">
+        <img src="{{ url_for('static', filename='uploads/' ~ job.workorder.job_image) }}"
+             alt="Workorder Image"
+             class="img-fluid rounded shadow"
+             style="max-height: 300px;" />
+      </div>
+    {% endif %}
+
+    <div class="job-body">
+      <p><strong>Material:</strong> {{ job.material }}</p>
+      <p><strong>Stock Size:</strong> {{ job.stock_size }}</p>
+      <p><strong>Time (hrs):</strong> {{ job.time }}</p>
+
+      {% for label, items in {
+        "Instruments": job.instruments,
+        "Tools": job.tools,
+        "Devices": job.devices,
+        "Equipment": job.equipment,
+        "Operations": job.operations,
+        "Others": job.other_items
+      }.items() %}
+        {% if items.strip() %}
+        <p><strong>{{ label }}:</strong></p>
+        <ol class="job-item-list">
+          {% for item in items.split(',') if item.strip() %}
+            <li>{{ item.strip() }}</li>
+          {% endfor %}
+        </ol>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="job-actions">
+      {% if job.workorder_id %}
+        
+      {% else %}
+        <em>No linked Workorder</em>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

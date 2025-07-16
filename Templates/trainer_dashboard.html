@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Trainer Dashboard{% endblock %}
+
+{% block content %}
+<div class="trainer-wrapper">
+  <h1>Welcome, {{ current_user.name }} 👋</h1>
+  <p>This is your trainer hub to manage content and engagement.</p>
+
+  <ul>
+    <li><a href="{{ url_for('trainer.upload_material') }}">Upload Material</a></li>
+    <li><a href="{{ url_for('trainer.view_feedback') }}">View Feedback</a></li>
+  </ul>
+</div>
+
+{% if unit %}
+  <!-- ✅ Unit exists: show trainee management -->
+  <div class="card border shadow-sm p-3 mb-4">
+    <h5 class="mb-2">👥 Trainees</h5>
+
+    {% if trainee_count == 0 %}
+      <span class="badge bg-danger mb-2">⛔ No trainees</span>
+      <p class="text-muted">Start by adding your class list.</p>
+      <a href="{{ url_for('trainer.manage_trainees') }}" class="btn btn-warning">
+        ➕ Add Trainees
+      </a>
+    {% else %}
+      <span class="badge bg-success mb-2">✅ {{ trainee_count }} Active</span>
+      <p class="text-muted">All trainees saved successfully.</p>
+      <a href="{{ url_for('trainer.manage_trainees') }}" class="btn btn-outline-primary">
+        ✏️ Edit Trainees
+      </a>
+    {% endif %}
+  </div>
+{% else %}
+  <!-- ❗ No unit setup yet -->
+  <div class="alert alert-warning mt-4">
+    <h5>🚧 Unit Setup Required</h5>
+    <p>You haven't configured your training unit yet. Please set it up to begin managing trainees.</p>
+    <a href="{{ url_for('trainer.setup_unit') }}" class="btn btn-primary">
+      ⚙️ Setup Your Unit
+    </a>
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>📄 Workorders for {{ unit.trade }} - {{ unit.year }}</h2>
+
+{% if workorders %}
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Exercise No</th>
+        <th>Aim</th>
+        <th>Common Tolerance</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for wo in workorders %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ wo.exercise_no }}</td>
+        <td>{{ wo.aim }}</td>
+        <td>{{ wo.common_tolerance }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <a href="{{ url_for('trainer.export_workorders_pdf') }}" class="btn btn-outline-primary mt-3">
+    📥 Export to PDF
+  </a>
+{% else %}
+  <div class="alert alert-info">No workorders available for your trade and year.</div>
+{% endif %}
+{% endblock %}

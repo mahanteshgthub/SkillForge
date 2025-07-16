@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>🛠️ Create New Workorder</h2>
+
+<!-- 🪧 Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+<form method="POST" class="left-align-form" enctype="multipart/form-data" autocomplete="off"> 
+    {{ form.hidden_tag() }}
+
+  <!-- 📁 Workorder Parameters -->
+  <table style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">
+    <thead style="background-color: #edf2f7;">
+      <tr><th colspan="2" style="padding: 10px; text-align: left;">📋 Workorder Parameters</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>{{ form.trade.label }}</td><td>{{ form.trade(class="form-control") }}</td></tr>
+      <tr>
+        <td>{{ form.year.label }}</td>
+        <td>{{ form.year(class="form-control") }}</td>
+      </tr>
+
+      <tr><td>{{ form.exercise_no.label }}</td><td>{{ form.exercise_no(class="form-control") }}</td></tr>
+      <tr><td>{{ form.aim.label }}</td><td>{{ form.aim(class="form-control") }}</td></tr>
+      <tr><td>{{ form.common_tolerance.label }}</td><td>{{ form.common_tolerance(class="form-control") }}</td></tr>
+      <tr>
+        <td>{{ form.job_image.label }}</td>
+        <td>
+          {{ form.job_image(id="jobImageInput") }}<span id="fileName" style="font-size: 0.9em; color: #555;"></span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 📏 Dimensional Features -->
+  <!-- 📏 Dimensional Features & Image Side-by-Side -->
+<div style="display: flex; gap: 40px; align-items: flex-start; margin-bottom: 30px;">
+
+  <!-- 📏 Dimensional Table -->
+  <div style="flex: 2;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead style="background-color: #fefcbf;">
+        <tr><th colspan="3" style="padding: 10px; text-align: left;">📏 Dim Features (A-J)<span id="totalScore" style="font-size: 0.8em; color: hsl(59, 86%, 54%);">(0/100 Marks)</span></th></tr>
+        <tr><th>👇</th><th>Size</th><th>Marks</th></tr>
+      </thead>
+      <tbody>
+        {% for f in form.dim_features %}
+        <tr>
+          <td>{{ "ABCDEFGHIJ"[loop.index0] }}</td>
+          <td>{{ f.size(class="form-control") }}</td>
+          <td>{{ f.marks(class="form-control marks-input") }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 🖼️ Preview Image -->
+  <div style="flex: 1;">
+    <p><strong>Job Image Preview:</strong></p>
+    <img id="imagePreview" src="#" alt="Preview" style="display: none; width: 320px; border: 1px solid #aaa; padding: 4px;">
+  </div>
+
+</div>
+
+  <!-- 🔧 Subjective Features -->
+  <table style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">
+    <thead style="background-color: #bee3f8;">
+      <tr><th colspan="3" style="padding: 10px; text-align: left;">🔧 Subjective Features (K–O)<span id="totalScore" style="font-size: 0.8em; color: hsl(59, 86%, 54%">(0/100 Marks)</span></th></tr>
+      <tr><th>👇</th><th>Operation</th><th>Marks</th></tr>
+    </thead>
+    <tbody>
+      {% for f in form.subj_features %}
+      <tr>
+        <td>{{ "KLMNO"[loop.index0] }}</td>
+        <td>{{ f.operation(class="form-control") }}</td>
+        <td>{{ f.marks(class="form-control marks-input") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- 🧠 Attitude Features -->
+  <table style="width: 100%; margin-bottom: 20px; border-collapse: collapse;">
+    <thead style="background-color: #c6f6d5;">
+      <tr><th colspan="3" style="padding: 10px; text-align: left;">🧠 Attitude Features (P-S)<span id="totalScore" style="font-size: 0.8em; color: hsl(59, 86%, 54%">(0/100 Marks)</span></th></tr>
+      <tr><th>👇</th><th>Trait</th><th>Marks</th></tr>
+    </thead>
+    <tbody>
+      {% for f in form.attitude_features %}
+      <tr>
+        <td>{{ "PQRS"[loop.index0] }}</td>
+        <td>{{ f.trait(class="form-control") }}</td>
+        <td>{{ f.marks(class="form-control marks-input") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <button type="submit" class="edit-btn">💾 Submit</button>
+</form>
+
+<!-- 🖼️ Preview Script -->
+<script>
+document.getElementById('jobImageInput').addEventListener('change', function (event) {
+  const file = event.target.files[0];
+  const preview = document.getElementById('imagePreview');
+  const fileName = document.getElementById('fileName');
+
+  if (file && file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+    fileName.textContent = file.name;
+  } else {
+    preview.src = '#';
+    preview.style.display = 'none';
+    fileName.textContent = '';
+  }
+});
+</script>
+
+<script>
+function updateTotalMarks() {
+  const inputs = document.querySelectorAll('.marks-input');
+  let total = 0;
+
+  inputs.forEach(input => {
+    const value = parseFloat(input.value);
+    if (!isNaN(value)) {
+      total += value;
+    }
+  });
+
+  const scoreDisplay = document.querySelectorAll('#totalScore');
+  scoreDisplay.forEach(el => el.textContent = `(${total}/100 Marks)`);
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  updateTotalMarks();  // Initial load
+
+  document.querySelectorAll('.marks-input').forEach(input => {
+    input.addEventListener('input', updateTotalMarks);
+  });
+});
+</script>
+{% endblock %}

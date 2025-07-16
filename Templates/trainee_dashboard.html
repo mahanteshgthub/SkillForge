@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Trainee Dashboard{% endblock %}
+{% block content %}
+  <h2>Trainee Dashboard</h2>
+  <!-- <p>Welcome, {{ current_user.name }}. Here you’ll see your assigned tasks.</p> -->
+  <p class="welcome-msg">Welcome, <strong>{{ current_user.name }}!</strong> Here you’ll see your assigned tasks as {{ current_user.role }}.</p>
+  <!-- add your trainee UI here -->
+{% endblock %}

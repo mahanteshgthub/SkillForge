@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Setup Your Unit{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">📋 Training Unit Details</h2>
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+      {{ form.iti_name.label(class="form-label") }}
+      {{ form.iti_name(class="form-control", readonly=not is_edit_mode) }}
+    </div>
+
+    <div class="form-group">
+      {{ form.city.label(class="form-label") }}
+      {{ form.city(class="form-control", readonly=not is_edit_mode) }}
+    </div>
+
+    <div class="form-group">
+      {{ form.iti_code.label(class="form-label") }}
+      {{ form.iti_code(class="form-control", readonly=not is_edit_mode) }}
+    </div>
+
+    <div class="form-group">
+      {{ form.trade.label(class="form-label") }}
+      {{ form.trade(class="form-select", disabled=not is_edit_mode) }}
+    </div>
+
+    <div class="form-group">
+      {{ form.shift_number.label(class="form-label") }}
+      {{ form.shift_number(class="form-select", disabled=not is_edit_mode) }}
+    </div>
+
+    <div class="form-group">
+      {{ form.unit_number.label(class="form-label") }}
+      {{ form.unit_number(class="form-select", disabled=not is_edit_mode) }}
+    </div>
+
+    <div class="form-group">
+      {{ form.year.label(class="form-label") }}
+      {{ form.year(class="form-select", disabled=not is_edit_mode) }}
+    </div>
+
+    <div class="form-group">
+      {{ form.year_of_admission.label(class="form-label") }}
+      {{ form.year_of_admission(class="form-select", disabled=not is_edit_mode) }}
+    </div>
+
+    {% if is_edit_mode %}
+      <button type="submit" class="btn btn-success mt-3">💾 Save</button>
+    {% elif unit %}
+      <a href="{{ url_for('trainer.setup_unit', edit='true') }}" class="btn btn-primary mt-3">✏️ Edit</a>
+    {% endif %}
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Create Workorder{% endblock %}
+{% block content %}
+<h2>Create Workorder Template</h2>`
+
+<!-- <form method="POST" enctype="multipart/form-data"> -->
+  <form method="POST" class="left-align-form" action="{{ url_for('admin.create_workorder') }}"enctype="multipart/form-data">
+  {{ form.hidden_tag() }}
+
+  <p>{{ form.trade.label }} {{ form.trade() }}</p>
+  <p>{{ form.year.label }} {{ form.year() }}</p>
+  <p>{{ form.exercise_no.label }} {{ form.exercise_no() }}</p>
+  <p>{{ form.aim.label }} {{ form.aim(rows=3) }}</p>
+  <p>{{ form.common_tolerance.label }} {{ form.common_tolerance() }}</p>
+  <p>{{ form.job_image.label }} {{ form.job_image() }}</p>
+
+  <h4>Dimensional Features (A-J)</h4>
+  {% for f in form.dim_features %}
+    <fieldset>
+      <legend><strong>Feature {{ dim_labels[loop.index0] }}</strong></legend>
+      <p>{{ f.size.label }} {{ f.size() }}</p>
+      <p>{{ f.marks.label }} {{ f.marks() }}</p>
+    </fieldset>
+  {% endfor %}
+
+  <h4>Subjective Features (K-O)</h4>
+  {% for f in form.subj_features %}
+    <fieldset>
+      <legend><strong>Feature {{ subj_labels[loop.index0] }}</strong></legend>
+      <p>{{ f.operation.label }} {{ f.operation() }}</p>
+      <p>{{ f.marks.label }} {{ f.marks() }}</p>
+    </fieldset>
+  {% endfor %}
+
+  <h4>Attitude (Fixed 20 Marks)</h4>
+  <ul>
+    <li>P – Safety (5)</li>
+    <li>Q – Housekeeping (5)</li>
+    <li>R – Initiative (5)</li>
+    <li>S – Co-operation (5)</li>
+  </ul>
+
+  <p>{{ form.submit(class="btn") }}</p>
+</form>
+
+
+{% endblock %}

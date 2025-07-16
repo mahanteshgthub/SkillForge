@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>✏️ Edit Job Info</h2>
+
+<form method="POST">
+  <div class="form-group">
+    <label><strong>Trade</strong></label>
+    <input type="text" class="form-control" value="{{ job.trade }}" readonly>
+  </div>
+  <div class="form-group">
+    <label><strong>Aim</strong></label>
+    <input type="text" class="form-control" value="{{ job.aim }}" readonly>
+  </div>
+  <div class="form-group">
+    <label>Material</label>
+    <input type="text" name="material" class="form-control" value="{{ job.material }}">
+  </div>
+  <div class="form-group">
+    <label>Stock Size</label>
+    <input type="text" name="stock_size" class="form-control" value="{{ job.stock_size }}">
+  </div>
+  <div class="form-group">
+    <label>Time</label>
+    <input type="text" name="time" class="form-control" value="{{ job.time }}">
+  </div>
+
+  {% for cat in ['instrument', 'tool', 'device', 'equipment', 'operation'] %}
+  <div class="form-group">
+    <label>{{ cat.capitalize() }}s</label>
+    <select name="{{ cat }}" class="form-control select2" multiple>
+        {% for item in dropdown_items[cat] %}
+            <option value="{{ item }}"
+            {% if item in (job[cat + 's'].split(',')) %}selected{% endif %}>
+            {{ item }}
+            </option>
+        {% endfor %}
+    </select>
+  </div>
+  {% endfor %}
+
+  <div class="form-group">
+    <label>Other Items</label>
+    <input type="text" name="other_items" class="form-control" value="{{ job.other_items }}">
+  </div>
+
+  <button type="submit" class="btn btn-primary mt-3">💾 Update</button>
+</form>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📘 Job Information Sheet</h2>
+
+<!-- TRADE SELECTION -->
+<div style="max-width: 600px;">
+  <label for="tradeSelect"><strong>Trade:</strong></label>
+  <select id="tradeSelect" class="form-control">
+    <option value="">-- Select Trade --</option>
+    {% for trade in trades %}
+      <option value="{{ trade }}">{{ trade }}</option>
+    {% endfor %}
+  </select>
+
+<!-- YEAR SELECTION -->
+<label for="yearSelect" style="margin-top: 10px;"><strong>Year:</strong></label>
+<select id="yearSelect" class="form-control" style="display: none;">
+  <option value="">-- Select Year --</option>
+  <option value="Jr">Jr</option>
+  <option value="Sr">Sr</option>
+</select>
+
+<!-- AIM SELECTION -->
+  <label for="aimSelect" style="margin-top: 10px;"><strong>Aim:</strong></label>
+  <select id="aimSelect" class="form-control" style="display: none;">
+    <option value="">-- Select Aim --</option>
+  </select>
+</div>
+
+<!-- AIM IMAGE PREVIEW -->
+<div style="margin-top: 20px;">
+  <img id="aimImage" src="#" style="display: none; width: 420px; max-width: 100%; border: 1px solid #ccc; padding: 5px;" />
+</div>
+
+<hr>
+
+<!-- JOB INFO FORM -->
+<form method="POST" class="left-align-form" >
+  <table style="width: 100%; border-collapse: collapse;">
+    <thead style="background-color: #f0f4f8;">
+      <tr><th colspan="2" style="padding: 8px;">📝 Job Requirements</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Material Required:</td>
+        <td><input name="material" class="form-control"></td>
+      </tr>
+      <tr>
+        <td>Stock Size:</td>
+        <td><input name="stock_size" class="form-control"></td>
+      </tr>
+      <tr>
+        <td>Time Allotted (hrs):</td>
+        <td><input name="time" type="number" step="0.1" class="form-control"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <br>
+
+  {% for category in ['instrument', 'tool', 'device', 'equipment', 'operation'] %}
+  <div style="margin-bottom: 20px;">
+    <label><strong>{{ category.capitalize().replace('_', ' ') }}s Required:</strong></label>
+    <select id="{{ category }}Select" name="{{ category }}" class="form-control select2" multiple="multiple">
+      {% for item in dropdown_items[category] %}
+        <option value="{{ item }}">{{ item }}</option>
+      {% endfor %}
+    </select>
+    <input type="text" id="add_{{ category }}" placeholder="Add new {{ category }}" class="form-control" style="margin-top: 5px;">
+    <button type="button" onclick="addItem('{{ category }}')">➕ Add</button>
+  </div>
+{% endfor %}
+
+  <div style="margin-bottom: 20px;">
+    <label><strong>Other Items Required:</strong></label>
+    <input name="other_items" class="form-control">
+  </div>
+
+  <button type="submit" class="edit-btn">💾 Save Job Info</button>
+  
+    <input type="hidden" name="trade" id="hiddenTrade" required>
+    <input type="hidden" name="year" id="hiddenYear" required>
+    <input type="hidden" name="aim" id="hiddenAim" required>
+    
+    
+</form>
+
+<!-- JS LOGIC -->
+<script>
+  // Dynamic aim mapping
+  const aimData = {
+    {% for trade in trades %}
+      "{{ trade }}": {
+        "Jr": [
+          {% for w in templates if w.trade == trade and w.year == 'Jr' %}
+            { aim: `{{ w.aim }}`, image: "{{ url_for('static', filename='uploads/' ~ w.job_image) if w.job_image else '' }}" },
+          {% endfor %}
+        ],
+        "Sr": [
+          {% for w in templates if w.trade == trade and w.year == 'Sr' %}
+            { aim: `{{ w.aim }}`, image: "{{ url_for('static', filename='uploads/' ~ w.job_image) if w.job_image else '' }}" },
+          {% endfor %}
+        ]
+      },
+    {% endfor %}
+  };
+
+
+  // Trade → Aim
+const tradeSelect = document.getElementById('tradeSelect');
+const yearSelect = document.getElementById('yearSelect');
+const aimSelect = document.getElementById('aimSelect');
+
+tradeSelect.addEventListener('change', () => {
+  document.getElementById('hiddenTrade').value = tradeSelect.value;
+  yearSelect.style.display = tradeSelect.value ? 'block' : 'none';
+  yearSelect.value = "";
+  aimSelect.style.display = 'none';
+  aimSelect.innerHTML = '<option value="">-- Select Aim --</option>';
+});
+
+yearSelect.addEventListener('change', () => {
+  document.getElementById('hiddenYear').value = yearSelect.value;
+  const trade = tradeSelect.value;
+  const year = yearSelect.value;
+  aimSelect.innerHTML = '<option value="">-- Select Aim --</option>';
+  if (aimData[trade] && aimData[trade][year]) {
+    aimData[trade][year].forEach(item => {
+      const opt = document.createElement('option');
+      opt.textContent = item.aim;
+      opt.value = item.image;
+      aimSelect.appendChild(opt);
+    });
+    aimSelect.style.display = 'block';
+  } else {
+    aimSelect.style.display = 'none';
+  }
+});
+
+aimSelect.addEventListener('change', () => {
+  document.getElementById('hiddenAim').value = aimSelect.options[aimSelect.selectedIndex].text;
+  const imgSrc = aimSelect.value;
+  const imageEl = document.getElementById('aimImage');
+  if (imgSrc) {
+    imageEl.src = imgSrc;
+    imageEl.style.display = 'block';
+  } else {
+    imageEl.style.display = 'none';
+  }
+});
+  // Add new job info items
+  function addItem(category) {
+    const input = document.getElementById(`add_${category}`);
+    const select = document.getElementById(`${category}Select`);
+    const value = input.value.trim();
+    if (value && ![...select.options].some(opt => opt.value === value)) {
+      const opt = new Option(value, value);
+      opt.selected = true;
+      select.add(opt);
+      input.value = "";
+    }
+  }
+
+  // Activate Select2 with tagging
+const categories = ['instrument', 'tool', 'device', 'equipment', 'operation'];
+  categories.forEach(cat => {
+    $(`#${cat}Select`).select2({
+      tags: true,
+      width: '100%',
+      placeholder: `Select or add ${cat}s`,
+      tokenSeparators: [','],
+      closeOnSelect: false // ✅ Keeps dropdown open for multiple selections
+    });
+ });
+
+
+// $(`#${cat}Select`).select2({
+//   tags: true,
+//   width: '100%',
+//   placeholder: `Select or add ${cat}s`,
+//   tokenSeparators: [','],
+//   closeOnSelect: false // 👈 Keeps the dropdown open after each selection
+// });
+</script>
+
+
+
+{% endblock %}

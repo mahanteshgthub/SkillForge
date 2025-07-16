@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>📋 Workorder Templates</h2>
+
+
+<!-- 📊 Filter Result Summary -->
+{% if templates %}
+  <p>Showing {{ templates|length }} result(s)
+    {% if request.args.get('trade') %} for Trade: <strong>{{ request.args.get('trade') }}</strong>{% endif %}
+    {% if request.args.get('year') %} Year: <strong>{{ request.args.get('year') }}</strong>{% endif %}
+  </p>
+{% else %}
+  <p><em>No workorders found for the selected criteria.</em></p>
+{% endif %}
+
+<div class="gallery-container">
+  {% for work in templates %}
+    <div class="workorder-card">
+      <h3>{{ work.trade }} – Exercise {{ work.exercise_no }} ({{ work.year }})</h3>
+      <p><strong>Aim:</strong> {{ work.aim }}</p>
+      <p><strong>Tolerance:</strong> {{ work.common_tolerance }}</p>
+
+      <!-- 🔁 Flexbox Layout for All Sections -->
+      <div class="card-grid" style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
+
+        <!-- 🖼️ Job Image -->
+        <div class="card-image">
+          {% if work.job_image %}
+            <img src="{{ url_for('static', filename='uploads/' ~ work.job_image) }}" alt="Job Image" style="max-width: 220px; border: 1px solid #ccc;">
+          {% else %}
+            <div class="image-placeholder">No image</div>
+          {% endif %}
+        </div>
+
+        <!-- 📏 Dimensional Table -->
+        <div class="card-section">
+          <table class="feature-table">
+            <thead>
+              <tr><th colspan="3">Dimensional Features (A–J)</th></tr>
+              <tr><th>Label</th><th>Size</th><th class="marks-col">Marks</th></tr>
+            </thead>
+            <tbody>
+              {% for label in "ABCDEFGHIJ" %}
+                {% set f = (work.dimensional_features | selectattr('label', 'equalto', label) | first) %}
+                <tr>
+                  <td>{{ label }}</td>
+                  <td>{{ f.size if f else '' }}</td>
+                  <td class="marks-dim">{{ f.marks if f else '' }}</td>
+                </tr>
+              {% endfor %}
+              <tr>
+                <td colspan="2"><strong>Subtotal</strong></td>
+                <td class="subtotal-dim"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 🔧 Subjective Table -->
+        <div class="card-section">
+          <table class="feature-table">
+            <thead>
+              <tr><th colspan="3">Subjective Features (K–O)</th></tr>
+              <tr><th>Label</th><th>Operation</th><th clas="marks-col">Marks</th></tr>
+            </thead>
+            <tbody>
+              {% for label in "KLMNO" %}
+                {% set f = (work.subjective_features | selectattr('label', 'equalto', label) | first) %}
+                <tr>
+                  <td>{{ label }}</td>
+                  <td>{{ f.operation if f else '' }}</td>
+                  <td class="marks-subj">{{ f.marks if f else '' }}</td>
+                </tr>
+              {% endfor %}
+              <tr>
+                <td colspan="2"><strong>Subtotal</strong></td>
+                <td class="subtotal-sub"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 🧠 Attitude Table -->
+        <div class="card-section">
+          <table class="feature-table">
+            <thead>
+              <tr><th colspan="3">Attitude Features (P–S)</th></tr>
+              <tr><th>Label</th><th>Trait</th><th class="marks-col">Marks</th></tr>
+            </thead>
+            <tbody>
+              {% for label in "PQRS" %}
+                {% set f = (work.attitude_features | selectattr('label', 'equalto', label) | first) %}
+                <tr>
+                  <td>{{ label }}</td>
+                  <td>{{ f.trait if f else '' }}</td>
+                  <td class="marks-att">{{ f.marks if f else '' }}</td>
+                </tr>
+              {% endfor %}
+              <tr>
+                <td colspan="2"><strong>Subtotal</strong></td>
+                <td class="subtotal-att"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+        <!-- 🔘 Action Buttons -->
+        <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <!-- <a href="{{ url_for('trainer.export_pdf', workorder_id=work.id) }}" class="btn btn-sm btn-outline-primary" target="_blank">📥 Export PDF</a> -->
+        <!-- 🔘 Export PDF with Options -->
+<form method="POST" action="{{ url_for('trainer.export_pdf', workorder_id=work.id) }}" target="_blank" style="margin-top: 16px; display: flex; flex-direction: column; gap: 8px; max-width: 300px;">
+  
+  <!-- Change Exercise No -->
+  <label for="exercise_change_{{ work.id }}">Change Exercise Number?</label>
+  <select name="exercise_change" id="exercise_change_{{ work.id }}" onchange="toggleDropdown('{{ work.id }}', this.value)">
+    <option value="no">No</option>
+    <option value="yes">Yes</option>
+  </select>
+
+  <div id="exercise_dropdown_{{ work.id }}" style="display:none;">
+    <label for="override_exercise_{{ work.id }}">Select Exercise (1–52):</label>
+    <select name="override_exercise" id="override_exercise_{{ work.id }}">
+      {% for i in range(1, 53) %}
+        <option value="{{ i }}">{{ i }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- Start & End Dates -->
+  <label for="insert_dates_{{ work.id }}">Insert Start and End Dates?</label>
+  <select name="insert_dates" id="insert_dates_{{ work.id }}" onchange="toggleDateFields('{{ work.id }}', this.value)">
+    <option value="no">No</option>
+    <option value="yes">Yes</option>
+  </select>
+
+  <div id="date_fields_{{ work.id }}" style="display:none;">
+    <label for="start_date_{{ work.id }}">Start Date (dd.mm.yyyy):</label>
+    <!-- <input type="text" name="start_date" id="start_date_{{ work.id }}" placeholder="dd.mm.yyyy" /> -->
+    <input type="date" name="start_date" id="start_date_{{ work.id }}" />
+    
+    <label for="end_date_{{ work.id }}">End Date (dd.mm.yyyy):</label>
+    <input type="date" name="end_date" id="end_date_{{ work.id }}" />
+  </div>
+
+  <button type="submit" class="btn btn-sm btn-outline-primary">📥 Export PDF</button>
+</form>
+      </form>
+      </div>
+    </div>
+  {% endfor %}
+
+  
+</div>
+
+<!-- 📊 Totals Script -->
+<script>
+function calculateTotal(className, targetClass) {
+  let total = 0;
+  document.querySelectorAll(`.${className}`).forEach(cell => {
+    const val = parseFloat(cell.textContent.trim());
+    if (!isNaN(val)) total += val;
+  });
+  document.querySelectorAll(`.${targetClass}`).forEach(cell => {
+    cell.textContent = total;
+  });
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  calculateTotal("marks-dim", "subtotal-dim");
+  calculateTotal("marks-subj", "subtotal-sub");
+  calculateTotal("marks-att", "subtotal-att");
+});
+
+function toggleDropdown(id, choice) {
+  document.getElementById(`exercise_dropdown_${id}`).style.display = choice === 'yes' ? 'block' : 'none';
+}
+function toggleDateFields(id, choice) {
+  document.getElementById(`date_fields_${id}`).style.display = choice === 'yes' ? 'block' : 'none';
+}
+
+</script>
+
+{% endblock %}

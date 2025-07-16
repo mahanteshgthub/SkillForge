@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>📋 Workorder Templates</h2>
+
+<!-- 🔍 Filter Form -->
+<form method="GET" class="form-inline mb-3" class="left-align-form">
+  <label for="trade">Trade:</label>
+  <input type="text" name="trade" id="trade" value="{{ request.args.get('trade', '') }}" class="form-control mx-2">
+
+  <label for="year">Year:</label>
+  <select name="year" id="year" class="form-control mx-2">
+    <option value="">--Select--</option>
+    <option value="Jr" {% if request.args.get('year') == 'Jr' %}selected{% endif %}>Jr</option>
+    <option value="Sr" {% if request.args.get('year') == 'Sr' %}selected{% endif %}>Sr</option>
+  </select>
+
+  <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+
+<!-- 📊 Filter Result Summary -->
+{% if templates %}
+  <p>Showing {{ templates|length }} result(s)
+    {% if request.args.get('trade') %} for Trade: <strong>{{ request.args.get('trade') }}</strong>{% endif %}
+    {% if request.args.get('year') %} Year: <strong>{{ request.args.get('year') }}</strong>{% endif %}
+  </p>
+{% else %}
+  <p><em>No workorders found for the selected criteria.</em></p>
+{% endif %}
+
+<div class="gallery-container">
+  {% for work in templates %}
+    <div class="workorder-card">
+      <h3>{{ work.trade }} – Exercise {{ work.exercise_no }} ({{ work.year }})</h3>
+      <p><strong>Aim:</strong> {{ work.aim }}</p>
+      <p><strong>Tolerance:</strong> {{ work.common_tolerance }}</p>
+
+      <!-- 🔁 Flexbox Layout for All Sections -->
+      <div class="card-grid" style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
+
+        <!-- 🖼️ Job Image -->
+        <div class="card-image">
+          {% if work.job_image %}
+            <img src="{{ url_for('static', filename='uploads/' ~ work.job_image) }}" alt="Job Image" style="max-width: 220px; border: 1px solid #ccc;">
+          {% else %}
+            <div class="image-placeholder">No image</div>
+          {% endif %}
+        </div>
+
+        <!-- 📏 Dimensional Table -->
+        <div class="card-section">
+          <table class="feature-table">
+            <thead>
+              <tr><th colspan="3">Dimensional Features (A–J)</th></tr>
+              <tr><th>Label</th><th>Size</th><th class="marks-col">Marks</th></tr>
+            </thead>
+            <tbody>
+              {% for label in "ABCDEFGHIJ" %}
+                {% set f = (work.dimensional_features | selectattr('label', 'equalto', label) | first) %}
+                <tr>
+                  <td>{{ label }}</td>
+                  <td>{{ f.size if f else '' }}</td>
+                  <td class="marks-dim">{{ f.marks if f else '' }}</td>
+                </tr>
+              {% endfor %}
+              <tr>
+                <td colspan="2"><strong>Subtotal</strong></td>
+                <td class="subtotal-dim"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 🔧 Subjective Table -->
+        <div class="card-section">
+          <table class="feature-table">
+            <thead>
+              <tr><th colspan="3">Subjective Features (K–O)</th></tr>
+              <tr><th>Label</th><th>Operation</th><th clas="marks-col">Marks</th></tr>
+            </thead>
+            <tbody>
+              {% for label in "KLMNO" %}
+                {% set f = (work.subjective_features | selectattr('label', 'equalto', label) | first) %}
+                <tr>
+                  <td>{{ label }}</td>
+                  <td>{{ f.operation if f else '' }}</td>
+                  <td class="marks-subj">{{ f.marks if f else '' }}</td>
+                </tr>
+              {% endfor %}
+              <tr>
+                <td colspan="2"><strong>Subtotal</strong></td>
+                <td class="subtotal-sub"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 🧠 Attitude Table -->
+        <div class="card-section">
+          <table class="feature-table">
+            <thead>
+              <tr><th colspan="3">Attitude Features (P–S)</th></tr>
+              <tr><th>Label</th><th>Trait</th><th class="marks-col">Marks</th></tr>
+            </thead>
+            <tbody>
+              {% for label in "PQRS" %}
+                {% set f = (work.attitude_features | selectattr('label', 'equalto', label) | first) %}
+                <tr>
+                  <td>{{ label }}</td>
+                  <td>{{ f.trait if f else '' }}</td>
+                  <td class="marks-att">{{ f.marks if f else '' }}</td>
+                </tr>
+              {% endfor %}
+              <tr>
+                <td colspan="2"><strong>Subtotal</strong></td>
+                <td class="subtotal-att"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <form method="POST" action="{{ url_for('admin.export_pdf', workorder_id=work.id) }}" target="_blank" class="export-form">
+
+  <!-- 📌 Exercise Number -->
+  <div>
+    <label for="exercise_change_{{ work.id }}">Change Exercise Number?</label>
+    <select name="exercise_change" id="exercise_change_{{ work.id }}" onchange="toggleDropdown('{{ work.id }}', this.value)">
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+  </div>
+
+  <!-- ⬇️ Dropdown if Yes -->
+  <div id="exercise_dropdown_{{ work.id }}" class="nested-section" style="display:none;">
+    <label for="override_exercise_{{ work.id }}">Select Exercise (1–52):</label>
+    <select name="override_exercise" id="override_exercise_{{ work.id }}">
+      {% for i in range(1, 53) %}
+        <option value="{{ i }}">{{ i }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <!-- 📅 Start and End Dates Control -->
+  <div>
+    <label for="insert_dates_{{ work.id }}">Insert Start and End Dates?</label>
+    <select name="insert_dates" id="insert_dates_{{ work.id }}" onchange="toggleDateFields('{{ work.id }}', this.value)">
+      <option value="no">No</option>
+      <option value="yes">Yes</option>
+    </select>
+  </div>
+
+  <!-- 📆 Calendar Date Pickers -->
+  <div id="date_fields_{{ work.id }}" class="nested-section" style="display:none;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      <div>
+        <label for="start_date_{{ work.id }}">Start Date:</label>
+        <input type="date" name="start_date" id="start_date_{{ work.id }}" />
+      </div>
+      <div>
+        <label for="end_date_{{ work.id }}">End Date:</label>
+        <input type="date" name="end_date" id="end_date_{{ work.id }}" />
+      </div>
+    </div>
+  </div>
+
+  <button type="submit">📥 Export Updated PDF</button>
+</form>
+      <!-- 🔘 Action Buttons -->
+      <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="{{ url_for('admin.edit_workorder', workorder_id=work.id) }}" class="edit-btn">✏️ Edit</a>
+        <a href="{{ url_for('admin.export_pdf', workorder_id=work.id) }}" class="edit-btn" target="_blank">📄 Export PDF</a>
+        
+        
+        <form action="{{ url_for('admin.delete_workorder', workorder_id=work.id) }}" method="POST" style="margin: 0;">
+        <button type="submit" onclick="return confirm('Are you sure you want to delete this workorder?');" class="edit-btn danger-btn">🗑️ Delete</button>
+        </form>
+      </div>
+    </div>
+
+      
+
+  {% endfor %}
+</div>
+
+<!-- 📊 Totals Script -->
+<script>
+function calculateTotal(className, targetClass) {
+  let total = 0;
+  document.querySelectorAll(`.${className}`).forEach(cell => {
+    const val = parseFloat(cell.textContent.trim());
+    if (!isNaN(val)) total += val;
+  });
+  document.querySelectorAll(`.${targetClass}`).forEach(cell => {
+    cell.textContent = total;
+  });
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  calculateTotal("marks-dim", "subtotal-dim");
+  calculateTotal("marks-subj", "subtotal-sub");
+  calculateTotal("marks-att", "subtotal-att");
+});
+
+function toggleDropdown(id, choice) {
+  document.getElementById(`exercise_dropdown_${id}`).style.display = choice === 'yes' ? 'block' : 'none';
+}
+function toggleDateFields(id, choice) {
+  document.getElementById(`date_fields_${id}`).style.display = choice === 'yes' ? 'block' : 'none';
+}
+
+</script>
+
+{% endblock %}
