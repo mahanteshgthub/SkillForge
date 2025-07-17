@@ -68,7 +68,6 @@ pandas==1.5.3
 passlib==1.7.4
 pefile==2023.2.7
 pillow==11.0.0
-pyarrow==17.0.0
 pycparser==2.22
 Pygments==2.18.0
 pyinstaller==6.11.0
