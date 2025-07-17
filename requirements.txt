@@ -38,7 +38,6 @@ Flask-SQLAlchemy==3.1.1
 Flask-WTF==1.2.2
 fonttools==4.54.1
 fpdf==1.7.2
-gevent==22.10.2
 gitignore_parser==0.1.11
 greenlet==3.1.1
 gunicorn==23.0.0
