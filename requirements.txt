@@ -64,6 +64,7 @@ numpy==2.1.2
 openpyxl==3.1.2
 ordered-set==4.1.0
 packaging==24.1
+pandas @ https://github.com/mwaskom/pandas-wheel/raw/main/pandas-2.1.4-cp311-cp311-manylinux_2_17_x86_64.whl
 pandas==2.1.4
 passlib==1.7.4
 pefile==2023.2.7
