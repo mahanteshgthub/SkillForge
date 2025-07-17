@@ -2,6 +2,6 @@ services:
   - type: web
     name: skillforge-app
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: pip install --prefer-binary -r requirements.txt
     startCommand: gunicorn app:app
     plan: free
